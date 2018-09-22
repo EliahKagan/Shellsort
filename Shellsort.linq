@@ -76,6 +76,31 @@ private static void InsertionSort<T>(IList<T> items) where T : IComparable<T>
     DoInsertionSort(items);
 }
 
+/// <summary>
+/// Generates a gap sequence consisting of one less than powers of 2.
+/// (Found by Hibbard 1963: https://dl.acm.org/citation.cfm?doid=366552.366557)
+/// </summary>
+private static List<int> GetHibbardGaps(int bound)
+{
+    var n = (uint)Math.Max(2, bound);
+    var a = new List<int>();
+    
+    checked {
+        for (var k = 1; ; ++k) {
+            var x = (1u << k) - 1u;
+            if (x >= n) break;
+            a.Add((int)x);
+        }
+    }
+    
+    a.Reverse();
+    return a;
+}
+
+/// <summary>
+/// Generates a gap sequence consisting of the 3-smooth numbers.
+/// (Found by Pratt 1972: http://www.dtic.mil/get-tr-doc/pdf?AD=AD0740110)
+/// </summary>
 private static List<int> Get3SmoothGaps(int bound)
 {
     var n = Math.Max(2L, bound);
@@ -87,6 +112,24 @@ private static List<int> Get3SmoothGaps(int bound)
     }
     
     InsertionSort(a);
+    a.Reverse();
+    return a;
+}
+
+/// <summary>
+/// Generates a gap sequence of values that differ by a bit more than 9/4.
+/// (Found by Tokuda 1992: https://dl.acm.org/citation.cfm?id=659879.)
+/// </summary>
+private static List<int> GetTokudaGaps(int bound)
+{
+    var n = Math.Max(2.0, bound);
+    var a = new List<int>();
+    
+    checked {
+        for (var x = 1.0; x < n; x = x * 2.25 + 1)
+            a.Add((int)Math.Ceiling(x));
+    }
+    
     a.Reverse();
     return a;
 }
@@ -246,9 +289,26 @@ private static void TestMethod<T>(Action<List<T>> method, string name, IList<T> 
 private static void Test<T>(IList<T> items) where T : IComparable<T>
 {
     TestMethod(a => a.Sort(Comparer<T>.Default), "System introsort", items);
-    if (items.Count <= 100_000) TestMethod(InsertionSort, "Insertion sort", items);
-    TestMethod(Shellsort, "Shellsort", items);
-    TestMethod(ShellsortAlt, "Shellsort (alt.)", items);
+    
+    if (items.Count <= 100_000)
+        TestMethod(InsertionSort, "Insertion sort", items);
+    
+    TestMethod(a => Shellsort(a, GetHibbardGaps(a.Count)),
+               "Shellsort [Hibbard 1963]", items);
+    
+    TestMethod(a => ShellsortAlt(a, GetHibbardGaps(a.Count)),
+               "Shellsort (alt.) [Hibbard 1963]", items);
+        
+    TestMethod(Shellsort, "Shellsort [Pratt 3-smooth]", items);
+    
+    TestMethod(ShellsortAlt, "Shellsort (alt.) [Pratt 3-smooth]", items);
+    
+    TestMethod(a => Shellsort(a, GetTokudaGaps(a.Count)),
+               "Shellsort [Tokuda 1992]", items);
+    
+    TestMethod(a => ShellsortAlt(a, GetTokudaGaps(a.Count)),
+               "Shellsort (alt.) [Tokuda 1992]", items);
+               
     TestMethod(Heapsort, "Heapsort", items);
 }
 
