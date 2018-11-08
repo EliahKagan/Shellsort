@@ -198,6 +198,40 @@ public static void ShellsortAlt<T>(IList<T> items) where T : IComparable<T>
     ShellsortAlt(items, Get3SmoothGaps(items.Count));
 }
 
+public static void Quicksort<T>(IList<T> items) where T : IComparable<T>
+{
+    CheckNonnull(items, nameof(items));
+    
+    void Swap(int i, int j) {
+        var tmp = items[i];
+        items[i] = items[j];
+        items[j] = tmp;
+    }
+    
+    int Partition(int low, int high) { // returns the new pivot index
+        Swap(low, low + (high - low) / 2);
+        var pivot = items[low];
+        var left = low;
+        
+        for (var right = left + 1; right <= high; ++right)
+            if (items[right].CompareTo(pivot) < 0) Swap(++left, right);
+        
+        Swap(low, left);
+        return left;
+    }
+    
+    void QSort(int low, int high) {
+        if (low >= high) return;
+        
+        var mid = Partition(low, high);
+        QSort(low, mid - 1);
+        QSort(mid + 1, high);
+    }
+    
+    QSort(0, items.Count - 1);
+    //items.Dump(); // FIXME: remove after debugging
+}
+
 public static void Heapsort<T>(IList<T> items) where T : IComparable<T>
 {
     CheckNonnull(items, nameof(items));
@@ -309,6 +343,8 @@ private static void Test<T>(IList<T> items) where T : IComparable<T>
     TestMethod(a => ShellsortAlt(a, GetTokudaGaps(a.Count)),
                "Shellsort (alt.) [Tokuda 1992]", items);
                
+    TestMethod(Quicksort, "Quicksort", items);
+    
     TestMethod(Heapsort, "Heapsort", items);
 }
 
@@ -321,7 +357,7 @@ private static void Main()
 
     Test(1, 17, 4, 32, 6, -5, 9, 2, 5, 11, 10);
     
-    var sizes = new[] { 1000, 10_000, 100_000, 1_000_000, 10_000_000 };
+    var sizes = new[] { 1000, 10_000, 100_000, 1_000_000/*, 10_000_000*/ };
     
     foreach (var n in sizes) {
         "Descending sequence...".Dump();
