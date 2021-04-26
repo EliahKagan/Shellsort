@@ -12,6 +12,8 @@
 // with this software. If not, see
 // <http://creativecommons.org/publicdomain/zero/1.0/>.
 
+#LINQPad optimize+
+
 private sealed class GapView<T> : IList<T> {
     public GapView(IList<T> items, int gap, int start, int? stop = null)
     {
@@ -369,7 +371,14 @@ private static void Main()
 
     Test(1, 17, 4, 32, 6, -5, 9, 2, 5, 11, 10);
 
-    var sizes = new[] { 1000, 10_000, 100_000, 1_000_000, 10_000_000 };
+    var sizes = new[] {
+        1000,
+        10_000,
+        100_000,
+        1_000_000,
+        10_000_000,
+        100_000_000,
+    };
 
     foreach (var n in sizes) {
         "Descending sequence...".Dump();
